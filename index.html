@@ -554,6 +554,7 @@
     <div class="status-dot"></div>
     <span id="statusText">ready</span>
   </div>
+  <button onclick="clearAllData()" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 8px;" title="Clear all data">reset</button>
 </header>
 
 <div class="layout">
@@ -676,12 +677,43 @@ const SAMPLES = {
   'lovekey-dtc': []
 };
 
+// ── PERSISTENCE ────────────────────────────────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem('currentLeadDesk', JSON.stringify({
+      leads: state.leads,
+      done: state.done,
+      activeProject: state.activeProject
+    }));
+  } catch(e) { console.warn('Could not save state', e); }
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('currentLeadDesk');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.leads) state.leads = parsed.leads;
+      if (parsed.done) state.done = parsed.done;
+      if (parsed.activeProject) state.activeProject = parsed.activeProject;
+      return true;
+    }
+  } catch(e) { console.warn('Could not load state', e); }
+  return false;
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 function init() {
-  // load sample data
-  Object.keys(SAMPLES).forEach(proj => {
-    state.leads[proj] = SAMPLES[proj].map((l, i) => ({ ...l, id: `${proj}-${i}`, status: 'new' }));
-  });
+  const hasSaved = loadState();
+  if (!hasSaved) {
+    Object.keys(SAMPLES).forEach(proj => {
+      state.leads[proj] = SAMPLES[proj].map((l, i) => ({ ...l, id: `${proj}-${i}`, status: 'new' }));
+    });
+    saveState();
+  }
+  document.querySelectorAll('.project-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`proj-${state.activeProject}`);
+  if (activeBtn) activeBtn.classList.add('active');
   updateCounts();
   render();
 }
@@ -794,6 +826,7 @@ function markLead(id, status) {
     saved: 'Saved for later.',
     skipped: 'Skipped.'
   };
+  saveState();
   showToast(msgs[status]);
   render();
 }
@@ -809,6 +842,7 @@ function switchProject(proj) {
   state.activeProject = proj;
   document.querySelectorAll('.project-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`proj-${proj}`).classList.add('active');
+  saveState();
   render();
 }
 
@@ -858,6 +892,7 @@ function handleCSV(event) {
     state.leads[proj] = [...state.leads[proj].filter(l => l.status !== 'new'), ...imported];
     updateCounts();
     switchProject(proj);
+    saveState();
     showToast(`Imported ${imported.length} leads into ${proj}.`);
     document.getElementById('csvInput').value = '';
   };
@@ -902,6 +937,12 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function clearAllData() {
+  if (!confirm('Clear all leads and history? This cannot be undone.')) return;
+  localStorage.removeItem('currentLeadDesk');
+  location.reload();
 }
 
 // ── START ──────────────────────────────────────────────────────────────────
