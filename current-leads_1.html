@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Current — Lead Desk</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a18;
+    --paper: #f5f2eb;
+    --sage: #7a9e7e;
+    --sage-light: #a8c5aa;
+    --rust: #c0622a;
+    --gold: #c9a84c;
+    --muted: #8a8880;
+    --card: #faf8f3;
+    --border: #e0ddd4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .wordmark {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
+  .wordmark span {
+    color: var(--sage);
+    font-style: italic;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* MAIN LAYOUT */
+  .layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* SIDEBAR */
+  aside {
+    width: 220px;
+    border-right: 1px solid var(--border);
+    padding: 28px 0;
+    flex-shrink: 0;
+    background: var(--paper);
+  }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 20px;
+    margin-bottom: 12px;
+  }
+
+  .project-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: left;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .project-btn:hover {
+    color: var(--ink);
+    background: rgba(122, 158, 126, 0.08);
+  }
+
+  .project-btn.active {
+    color: var(--ink);
+    border-left-color: var(--sage);
+    background: rgba(122, 158, 126, 0.1);
+    font-weight: 500;
+  }
+
+  .project-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--border);
+    color: var(--muted);
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+
+  .project-btn.active .project-count {
+    background: var(--sage);
+    color: white;
+  }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 20px;
+  }
+
+  .sidebar-stat {
+    padding: 6px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* MAIN CONTENT */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 36px 40px;
+    max-width: 720px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* LEAD CARD */
+  .lead-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+    animation: slideIn 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lead-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--sage);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lead-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .lead-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(122, 158, 126, 0.15);
+    color: var(--sage);
+  }
+
+  .lead-tag.lovekey { background: rgba(201, 168, 76, 0.15); color: var(--gold); }
+  .lead-tag.mural { background: rgba(192, 98, 42, 0.12); color: var(--rust); }
+
+  .lead-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .lead-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+
+  .lead-type {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .lead-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .detail-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .detail-val {
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .detail-val a {
+    color: var(--sage);
+    text-decoration: none;
+  }
+
+  .detail-val a:hover { text-decoration: underline; }
+
+  .lead-why {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a4a46;
+    padding: 14px 16px;
+    background: rgba(122, 158, 126, 0.06);
+    border-left: 2px solid var(--sage-light);
+    border-radius: 0 2px 2px 0;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  /* OUTREACH COPY */
+  .outreach-section {
+    margin-bottom: 24px;
+  }
+
+  .outreach-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .outreach-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .outreach-copy {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink);
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 16px 18px;
+    white-space: pre-wrap;
+    font-family: 'DM Sans', sans-serif;
+    cursor: text;
+    outline: none;
+    min-height: 120px;
+    transition: border-color 0.2s;
+  }
+
+  .outreach-copy:focus {
+    border-color: var(--sage);
+  }
+
+  .copy-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* ACTION BUTTONS */
+  .actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    padding: 11px 22px;
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary {
+    background: var(--sage);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #6a8e6e; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--ink); }
+
+  .btn-skip {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid transparent;
+    margin-left: auto;
+  }
+
+  .btn-skip:hover { color: var(--ink); }
+
+  .btn-copy {
+    background: transparent;
+    color: var(--sage);
+    border: 1px solid var(--sage-light);
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .btn-copy:hover { background: rgba(122, 158, 126, 0.1); }
+
+  /* EMPTY / DONE STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .big {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+  }
+
+  .empty-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .empty-sub { font-size: 13px; }
+
+  /* DONE QUEUE */
+  .done-section {
+    margin-top: 32px;
+  }
+
+  .done-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .done-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .done-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 6px;
+    background: var(--card);
+    font-size: 13px;
+  }
+
+  .done-item-left { display: flex; align-items: center; gap: 10px; }
+
+  .done-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+
+  .status-sent { background: rgba(122,158,126,0.15); color: var(--sage); }
+  .status-saved { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .status-skipped { background: rgba(138,136,128,0.12); color: var(--muted); }
+
+  .followup-note {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 20px;
+    border-radius: 3px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* IMPORT BANNER */
+  .import-banner {
+    background: rgba(122, 158, 126, 0.08);
+    border: 1px dashed var(--sage-light);
+    border-radius: 3px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .import-banner:hover { background: rgba(122, 158, 126, 0.14); }
+
+  .import-icon { font-size: 18px; }
+
+  .import-text { font-size: 13px; color: var(--muted); }
+
+  .import-text strong { color: var(--ink); display: block; font-size: 13px; margin-bottom: 2px; }
+
+  #csvInput { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">Current <span>Lead Desk</span></div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    <span id="statusText">ready</span>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="sidebar-label">Projects</div>
+
+    <button class="project-btn active" onclick="switchProject('brand')" id="proj-brand">
+      Brand Design
+      <span class="project-count" id="count-brand">0</span>
+    </button>
+    <button class="project-btn" onclick="switchProject('lovekey-events')" id="proj-lovekey-events">
+      LoveKey Events
+      <span class="project-count" id="count-lovekey-events">0</span>
+    </button>
+    <button class="project-btn" onclick="switchProject('mural')" id="proj-mural">
+      Mural & Commissions
+      <span class="project-count" id="count-mural">0</span>
+    </button>
+    <button class="project-btn" onclick="switchProject('lovekey-dtc')" id="proj-lovekey-dtc">
+      LoveKey DTC
+      <span class="project-count" id="count-lovekey-dtc">0</span>
+    </button>
+
+    <hr class="sidebar-divider">
+    <div class="sidebar-label">Overview</div>
+    <div class="sidebar-stat">
+      <span class="stat-label">Total leads</span>
+      <span class="stat-value" id="stat-total">0</span>
+    </div>
+    <div class="sidebar-stat">
+      <span class="stat-label">Contacted</span>
+      <span class="stat-value" id="stat-contacted">0</span>
+    </div>
+    <div class="sidebar-stat">
+      <span class="stat-label">Remaining</span>
+      <span class="stat-value" id="stat-remaining">0</span>
+    </div>
+  </aside>
+
+  <main>
+    <div id="importBanner" class="import-banner" onclick="document.getElementById('csvInput').click()">
+      <div class="import-icon">📂</div>
+      <div class="import-text">
+        <strong>Import leads from Current</strong>
+        Drop a CSV here or click to upload — exported from your Current workspace
+      </div>
+    </div>
+    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)">
+
+    <div id="mainContent"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+const state = {
+  activeProject: 'brand',
+  leads: {
+    'brand': [],
+    'lovekey-events': [],
+    'mural': [],
+    'lovekey-dtc': []
+  },
+  done: []
+};
+
+const PROJECT_LABELS = {
+  'brand': 'brand',
+  'lovekey-events': 'lovekey',
+  'mural': 'mural',
+  'lovekey-dtc': 'lovekey'
+};
+
+// ── SAMPLE DATA ────────────────────────────────────────────────────────────
+const SAMPLES = {
+  brand: [
+    {
+      name: "Nourish Kitchen & Table",
+      type: "Farm-to-table restaurant, Williamsburg",
+      contact: "Sarah Chen, Owner",
+      contactMethod: "@nourishkitchenbk (Instagram)",
+      location: "Williamsburg, Brooklyn",
+      why: "Recently opened, currently using stock photography and no cohesive brand system. Menu design is inconsistent with their premium positioning. Strong candidate for full brand identity work.",
+      outreach: `Hi Sarah — came across Nourish while exploring the Williamsburg food scene and love what you're building. I'm a Brooklyn-based brand designer and I noticed there might be an opportunity to bring your visual identity up to the level of the food itself. Would love to show you some examples of my work if you're open to it.`
+    },
+    {
+      name: "Botanica Wellness Studio",
+      type: "Boutique wellness & yoga, Park Slope",
+      contact: "Studio manager (DM via IG)",
+      contactMethod: "@botanicabrooklyn",
+      location: "Park Slope, Brooklyn",
+      why: "Logo looks DIY, website uses a generic Squarespace template with no customization. Their clientele skews affluent — there's a clear gap between their customer and their branding.",
+      outreach: `Hey Botanica team — I'm a brand designer based in Brooklyn and I've been admiring your studio's energy online. Your brand visuals don't quite match the premium experience you're creating. I'd love to chat about what a refined identity could look like for you.`
+    }
+  ],
+  'lovekey-events': [
+    {
+      name: "Fordham University — Student Life",
+      type: "University event programming",
+      contact: "Events Coordinator (to verify on LinkedIn)",
+      contactMethod: "events@fordham.edu (general)",
+      location: "Bronx / Lincoln Center campus",
+      why: "Active programming board with fall semester budget. LoveKey pop-up works well for orientation events, spring fling, and mental health awareness weeks.",
+      outreach: `Hi — I'm reaching out about a unique experiential pop-up installation called LoveKey. It's designed specifically for college event programming — interactive, Instagram-worthy, and emotionally resonant for students. I'd love to share details ahead of your fall planning season.`
+    }
+  ],
+  'mural': [
+    {
+      name: "Devoción Coffee",
+      type: "Specialty coffee, multiple Brooklyn locations",
+      contact: "Operations / Marketing (IG DM)",
+      contactMethod: "@devocion",
+      location: "Williamsburg / Flatiron",
+      why: "Known for stunning interior design. They've used murals before and have blank wall space at newer locations. Strong visual brand — a commissioned piece would align naturally.",
+      outreach: `Hi Devoción — I'm a Brooklyn muralist and I've admired your spaces for years. I'd love to pitch a commissioned piece for one of your locations. My work tends to bring warmth and story to commercial spaces in a way that resonates with coffee culture. Happy to share my portfolio.`
+    }
+  ],
+  'lovekey-dtc': []
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+function init() {
+  // load sample data
+  Object.keys(SAMPLES).forEach(proj => {
+    state.leads[proj] = SAMPLES[proj].map((l, i) => ({ ...l, id: `${proj}-${i}`, status: 'new' }));
+  });
+  updateCounts();
+  render();
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render() {
+  const proj = state.activeProject;
+  const leads = state.leads[proj].filter(l => l.status === 'new');
+  const done = state.done.filter(d => d.project === proj);
+  const lead = leads[0];
+  const container = document.getElementById('mainContent');
+
+  let html = '';
+
+  // section header
+  const projNames = {
+    'brand': 'Brand Design',
+    'lovekey-events': 'LoveKey Events',
+    'mural': 'Mural & Commissions',
+    'lovekey-dtc': 'LoveKey DTC'
+  };
+
+  html += `<div class="section-header">
+    <div class="section-title">${projNames[proj]}</div>
+    <div class="section-subtitle">${leads.length} lead${leads.length !== 1 ? 's' : ''} remaining</div>
+  </div>`;
+
+  if (lead) {
+    const tagClass = PROJECT_LABELS[proj];
+    const allLeads = state.leads[proj];
+    const currentIndex = allLeads.filter(l => l.status === 'new').indexOf(lead);
+    const total = allLeads.filter(l => l.status === 'new').length;
+
+    html += `<div class="lead-card">
+      <div class="lead-meta">
+        <span class="lead-tag ${tagClass}">${projNames[proj]}</span>
+        <span class="lead-number">${currentIndex + 1} of ${total}</span>
+      </div>
+      <div class="lead-name">${lead.name}</div>
+      <div class="lead-type">${lead.type}</div>
+      <div class="lead-details">
+        <div class="detail-item">
+          <span class="detail-key">Contact</span>
+          <span class="detail-val">${lead.contact || '—'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Reach via</span>
+          <span class="detail-val">${lead.contactMethod && lead.contactMethod !== lead.contact ? lead.contactMethod : (lead.contact || '—')}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Location</span>
+          <span class="detail-val">${lead.location}</span>
+        </div>
+      </div>
+      <div class="lead-why">${lead.why}</div>
+
+      <div class="outreach-section">
+        <div class="outreach-label">Suggested outreach — edit freely</div>
+        <div class="outreach-copy" contenteditable="true" id="outreachText">${lead.outreach}</div>
+        <div class="copy-hint">Click to edit before copying</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" onclick="markLead('${lead.id}', 'sent')">✓ Mark as Sent</button>
+        <button class="btn btn-copy" onclick="copyOutreach()">Copy Text</button>
+        <button class="btn btn-secondary" onclick="markLead('${lead.id}', 'saved')">Save for Later</button>
+        <button class="btn btn-skip" onclick="markLead('${lead.id}', 'skipped')">Skip →</button>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="empty-state">
+      <div class="big">✓</div>
+      <div class="empty-title">All caught up.</div>
+      <div class="empty-sub">Import a new CSV from Current to load more leads.</div>
+    </div>`;
+  }
+
+  // done queue
+  if (done.length > 0) {
+    html += `<div class="done-section">
+      <div class="done-label">Already handled</div>`;
+    done.slice().reverse().forEach(d => {
+      const statusMap = { sent: 'Sent', saved: 'Saved', skipped: 'Skipped' };
+      const classMap = { sent: 'status-sent', saved: 'status-saved', skipped: 'status-skipped' };
+      const followup = d.status === 'sent' ? `Follow up: ${getFollowupDate()}` : '';
+      html += `<div class="done-item">
+        <div class="done-item-left">
+          <span class="done-status ${classMap[d.status]}">${statusMap[d.status]}</span>
+          <span>${d.name}</span>
+        </div>
+        ${followup ? `<span class="followup-note">${followup}</span>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ── ACTIONS ────────────────────────────────────────────────────────────────
+function markLead(id, status) {
+  const proj = state.activeProject;
+  const lead = state.leads[proj].find(l => l.id === id);
+  if (!lead) return;
+  lead.status = status;
+  state.done.push({ ...lead, project: proj, status, doneAt: new Date() });
+  updateCounts();
+  const msgs = {
+    sent: 'Marked as sent — follow-up set for 5 days out.',
+    saved: 'Saved for later.',
+    skipped: 'Skipped.'
+  };
+  showToast(msgs[status]);
+  render();
+}
+
+function copyOutreach() {
+  const el = document.getElementById('outreachText');
+  if (!el) return;
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard.'));
+}
+
+function switchProject(proj) {
+  state.activeProject = proj;
+  document.querySelectorAll('.project-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`proj-${proj}`).classList.add('active');
+  render();
+}
+
+// ── CSV IMPORT ─────────────────────────────────────────────────────────────
+function handleCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const text = e.target.result;
+    const rows = text.trim().split('\n');
+    const headers = rows[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+
+    const imported = [];
+    for (let i = 1; i < rows.length; i++) {
+      const vals = parseCSVRow(rows[i]);
+      if (vals.length < 2) continue;
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = (vals[idx] || '').replace(/^"|"$/g, '').trim(); });
+
+      // map flexible column names across all three schemas
+      // LoveKey Events: Category, Institution, Contact, Role, Location, Why Match, Phone Number, Email, Outreach Copy, Priority, Status
+      // Mural: Category, Business, What They Do, Location, Why Match, Contact Info, Outreach Copy, Priority, Status
+      // Brand Design: Category, Business Name, What They Do, Location, Why Good Fit, Contact Info, Outreach Copy, Priority, Status
+      imported.push({
+        id: `imported-${Date.now()}-${i}`,
+        status: 'new',
+        name: obj['institution'] || obj['business name'] || obj['business'] || obj['name'] || 'Unknown',
+        type: obj['what they do'] || obj['role'] || obj['type'] || obj['category'] || '',
+        contact: obj['contact'] || obj['contact info'] || '',
+        contactMethod: obj['email'] || obj['phone number'] || obj['contact info'] || obj['instagram'] || '',
+        location: obj['location'] || '',
+        why: obj['why match'] || obj['why good fit'] || obj['why'] || obj['notes'] || '',
+        outreach: obj['outreach copy'] || obj['outreach'] || obj['draft'] || '',
+        priority: obj['priority'] || '',
+        rawStatus: obj['status'] || ''
+      });
+    }
+
+    // detect project from filename
+    const fname = file.name.toLowerCase();
+    let proj = 'brand';
+    if (fname.includes('lovekey') && fname.includes('event')) proj = 'lovekey-events';
+    else if (fname.includes('lovekey')) proj = 'lovekey-dtc';
+    else if (fname.includes('mural')) proj = 'mural';
+
+    state.leads[proj] = [...state.leads[proj].filter(l => l.status !== 'new'), ...imported];
+    updateCounts();
+    switchProject(proj);
+    showToast(`Imported ${imported.length} leads into ${proj}.`);
+    document.getElementById('csvInput').value = '';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVRow(row) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < row.length; i++) {
+    if (row[i] === '"') { inQuotes = !inQuotes; }
+    else if (row[i] === ',' && !inQuotes) { result.push(current); current = ''; }
+    else { current += row[i]; }
+  }
+  result.push(current);
+  return result;
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function updateCounts() {
+  let total = 0, remaining = 0;
+  Object.keys(state.leads).forEach(proj => {
+    const newLeads = state.leads[proj].filter(l => l.status === 'new').length;
+    document.getElementById(`count-${proj}`).textContent = newLeads;
+    total += state.leads[proj].length;
+    remaining += newLeads;
+  });
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-contacted').textContent = state.done.filter(d => d.status === 'sent').length;
+  document.getElementById('stat-remaining').textContent = remaining;
+}
+
+function getFollowupDate() {
+  const d = new Date();
+  d.setDate(d.getDate() + 5);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── START ──────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
