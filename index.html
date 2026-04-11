@@ -656,11 +656,25 @@ const SAMPLES = {
     {
       name: "Fordham University — Student Life",
       type: "University event programming",
-      contact: "Events Coordinator (to verify on LinkedIn)",
-      contactMethod: "events@fordham.edu (general)",
+      contactName: "Events Coordinator",
+      contactTitle: "Director of Student Life",
+      email: "events@fordham.edu",
+      phone: "",
       location: "Bronx / Lincoln Center campus",
       why: "Active programming board with fall semester budget. LoveKey pop-up works well for orientation events, spring fling, and mental health awareness weeks.",
-      outreach: `Hi — I'm reaching out about a unique experiential pop-up installation called LoveKey. It's designed specifically for college event programming — interactive, Instagram-worthy, and emotionally resonant for students. I'd love to share details ahead of your fall planning season.`
+      outreach: `Hi — my name is Cody, and I'm an artist and creator of the LoveKey Movement™ — a project built around one message: Love is the Key.
+
+LoveKey has been doing pop-up art installations at colleges and art fairs around the country.
+
+The experience is simple. Students respond to a prompt, share a moment, and leave with a physical key. The prompt can be customized to fit your campus — a favorite memory, a theme that matters to your community — or we can go with the standard: "Share a time when love made all the difference." That one has been moving people to tears at installations everywhere it goes.
+
+LoveKey fits naturally into welcome week, mental health awareness programming, student life activations, and so much more.
+
+Minimum booking is $2,500 and I handle everything on-site.
+
+You can see it in action here: lovekeymovement.com
+
+Would this be worth a conversation for your calendar?`
     }
   ],
   'mural': [
@@ -746,33 +760,63 @@ function render() {
     const allLeads = state.leads[proj];
     const currentIndex = allLeads.filter(l => l.status === 'new').indexOf(lead);
     const total = allLeads.filter(l => l.status === 'new').length;
+    const isEvent = proj === 'lovekey-events';
+
+    // Build details grid based on project type
+    let detailsHtml = '';
+    if (isEvent) {
+      // LoveKey Events: School, Contact Name + Title, Email, Phone, Location
+      detailsHtml = `
+        <div class="detail-item">
+          <span class="detail-key">Contact</span>
+          <span class="detail-val">${[lead.contactName, lead.contactTitle].filter(Boolean).join(', ') || '—'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Email</span>
+          <span class="detail-val">${lead.email || '—'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Phone</span>
+          <span class="detail-val">${lead.phone || '—'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Location</span>
+          <span class="detail-val">${lead.location || '—'}</span>
+        </div>`;
+    } else {
+      // Brand / Mural / DTC
+      detailsHtml = `
+        <div class="detail-item">
+          <span class="detail-key">Contact</span>
+          <span class="detail-val">${lead.contactName || lead.contact || '—'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Reach via</span>
+          <span class="detail-val">${lead.email || lead.contactInfo || lead.contactMethod || '—'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-key">Location</span>
+          <span class="detail-val">${lead.location || '—'}</span>
+        </div>`;
+    }
+
+    // Build outreach — for events always use the template (populated at import), for others use stored copy
+    const outreachText = lead.outreach || (OUTREACH_TEMPLATES[proj] ? OUTREACH_TEMPLATES[proj](lead) : '');
 
     html += `<div class="lead-card">
       <div class="lead-meta">
         <span class="lead-tag ${tagClass}">${projNames[proj]}</span>
+        ${lead.priority ? `<span class="lead-tag" style="background:rgba(192,98,42,0.1);color:var(--rust);">${lead.priority}</span>` : ''}
         <span class="lead-number">${currentIndex + 1} of ${total}</span>
       </div>
       <div class="lead-name">${lead.name}</div>
-      <div class="lead-type">${lead.type}</div>
-      <div class="lead-details">
-        <div class="detail-item">
-          <span class="detail-key">Contact</span>
-          <span class="detail-val">${lead.contact || '—'}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-key">Reach via</span>
-          <span class="detail-val">${lead.contactMethod && lead.contactMethod !== lead.contact ? lead.contactMethod : (lead.contact || '—')}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-key">Location</span>
-          <span class="detail-val">${lead.location}</span>
-        </div>
-      </div>
-      <div class="lead-why">${lead.why}</div>
+      ${lead.type ? `<div class="lead-type">${lead.type}</div>` : ''}
+      <div class="lead-details">${detailsHtml}</div>
+      ${lead.why ? `<div class="lead-why">${lead.why}</div>` : ''}
 
       <div class="outreach-section">
         <div class="outreach-label">Suggested outreach — edit freely</div>
-        <div class="outreach-copy" contenteditable="true" id="outreachText">${lead.outreach}</div>
+        <div class="outreach-copy" contenteditable="true" id="outreachText">${outreachText}</div>
         <div class="copy-hint">Click to edit before copying</div>
       </div>
 
@@ -846,6 +890,28 @@ function switchProject(proj) {
   render();
 }
 
+// ── OUTREACH TEMPLATES ─────────────────────────────────────────────────────
+const OUTREACH_TEMPLATES = {
+  'lovekey-events': (lead) => {
+    return `Hi${lead.contactName ? ' ' + lead.contactName.split(' ')[0] : ''} — my name is Cody, and I'm an artist and creator of the LoveKey Movement™ — a project built around one message: Love is the Key.
+
+LoveKey has been doing pop-up art installations at colleges and art fairs around the country.
+
+The experience is simple. Students respond to a prompt, share a moment, and leave with a physical key. The prompt can be customized to fit your campus — a favorite memory, a theme that matters to your community — or we can go with the standard: "Share a time when love made all the difference." That one has been moving people to tears at installations everywhere it goes.
+
+LoveKey fits naturally into welcome week, mental health awareness programming, student life activations, and so much more.
+
+Minimum booking is $2,500 and I handle everything on-site.
+
+You can see it in action here: lovekeymovement.com
+
+Would this be worth a conversation for your calendar?`;
+  },
+  'brand': (lead) => lead.outreach || '',
+  'mural': (lead) => lead.outreach || '',
+  'lovekey-dtc': (lead) => lead.outreach || ''
+};
+
 // ── CSV IMPORT ─────────────────────────────────────────────────────────────
 function handleCSV(event) {
   const file = event.target.files[0];
@@ -856,6 +922,13 @@ function handleCSV(event) {
     const rows = text.trim().split('\n');
     const headers = rows[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
 
+    // detect project from filename first (needed for template selection)
+    const fname = file.name.toLowerCase();
+    let proj = 'brand';
+    if (fname.includes('lovekey') && (fname.includes('event') || fname.includes('college') || fname.includes('university'))) proj = 'lovekey-events';
+    else if (fname.includes('lovekey')) proj = 'lovekey-dtc';
+    else if (fname.includes('mural')) proj = 'mural';
+
     const imported = [];
     for (let i = 1; i < rows.length; i++) {
       const vals = parseCSVRow(rows[i]);
@@ -863,31 +936,53 @@ function handleCSV(event) {
       const obj = {};
       headers.forEach((h, idx) => { obj[h] = (vals[idx] || '').replace(/^"|"$/g, '').trim(); });
 
-      // map flexible column names across all three schemas
-      // LoveKey Events: Category, School, Location, Contact Name, Title, Email, Phone, Why Fit, Date Pulled, Outreach Copy, Priority, Status
-      // Mural: Category, Business Name, Location, Contact Info, What They Do, Why Fit, Outreach Copy, Priority, Status
-      // Brand Design: Category, Business Name, Location, Contact Info, What They Do, Why Fit, Outreach Copy, Priority, Status
-      imported.push({
+      // ── LoveKey Events schema ──────────────────────────────────────────────
+      // Columns: Category, School, Location, Contact Name, Title, Email, Phone,
+      //          Why Fit, Date Pulled, Outreach Copy, Priority, Status
+      //
+      // ── Brand Design / Mural schema ───────────────────────────────────────
+      // Columns: Category, Business Name, Location, Contact Info, What They Do,
+      //          Why Fit, Outreach Copy, Priority, Status
+
+      const isEvent = proj === 'lovekey-events';
+
+      const lead = {
         id: `imported-${Date.now()}-${i}`,
         status: 'new',
-        name: obj['institution'] || obj['business name'] || obj['business'] || obj['name'] || 'Unknown',
-        type: obj['what they do'] || obj['role'] || obj['type'] || obj['category'] || '',
-        contact: obj['contact'] || obj['contact info'] || '',
-        contactMethod: obj['email'] || obj['phone number'] || obj['contact info'] || obj['instagram'] || '',
+        // Name: school name for events, business name for everything else
+        name: isEvent
+          ? (obj['school'] || obj['institution'] || obj['name'] || 'Unknown')
+          : (obj['business name'] || obj['business'] || obj['name'] || 'Unknown'),
+        // Type: for events this is blank/category; for others it's what they do
+        type: isEvent
+          ? (obj['category'] || obj['type'] || '')
+          : (obj['what they do'] || obj['type'] || obj['category'] || ''),
+        // Contact person
+        contactName: isEvent
+          ? (obj['contact name'] || obj['contact'] || '')
+          : (obj['contact name'] || obj['contact'] || obj['contact info'] || ''),
+        // Contact title (events only)
+        contactTitle: isEvent ? (obj['title'] || obj['role'] || '') : '',
+        // Email
+        email: obj['email'] || '',
+        // Phone
+        phone: isEvent ? (obj['phone'] || obj['phone number'] || '') : '',
+        // Generic contact info fallback (brand/mural)
+        contactInfo: !isEvent ? (obj['contact info'] || obj['instagram'] || obj['email'] || '') : '',
         location: obj['location'] || '',
-        why: obj['why match'] || obj['why good fit'] || obj['why'] || obj['notes'] || '',
-        outreach: obj['outreach copy'] || obj['outreach'] || obj['draft'] || '',
+        why: obj['why fit'] || obj['why good fit'] || obj['why match'] || obj['why'] || obj['notes'] || '',
         priority: obj['priority'] || '',
-        rawStatus: obj['status'] || ''
-      });
-    }
+        rawStatus: obj['status'] || '',
+        outreach: obj['outreach copy'] || obj['outreach'] || obj['draft'] || ''
+      };
 
-    // detect project from filename
-    const fname = file.name.toLowerCase();
-    let proj = 'brand';
-    if (fname.includes('lovekey') && fname.includes('event')) proj = 'lovekey-events';
-    else if (fname.includes('lovekey')) proj = 'lovekey-dtc';
-    else if (fname.includes('mural')) proj = 'mural';
+      // Auto-populate outreach from template if empty or if it's a lovekey-events lead
+      if (isEvent || !lead.outreach) {
+        lead.outreach = OUTREACH_TEMPLATES[proj](lead);
+      }
+
+      imported.push(lead);
+    }
 
     state.leads[proj] = [...state.leads[proj].filter(l => l.status !== 'new'), ...imported];
     updateCounts();
