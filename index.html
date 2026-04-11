@@ -864,9 +864,9 @@ function handleCSV(event) {
       headers.forEach((h, idx) => { obj[h] = (vals[idx] || '').replace(/^"|"$/g, '').trim(); });
 
       // map flexible column names across all three schemas
-      // LoveKey Events: Category, Institution, Contact, Role, Location, Why Match, Phone Number, Email, Outreach Copy, Priority, Status
-      // Mural: Category, Business, What They Do, Location, Why Match, Contact Info, Outreach Copy, Priority, Status
-      // Brand Design: Category, Business Name, What They Do, Location, Why Good Fit, Contact Info, Outreach Copy, Priority, Status
+      // LoveKey Events: Category, School, Location, Contact Name, Title, Email, Phone, Why Fit, Date Pulled, Outreach Copy, Priority, Status
+      // Mural: Category, Business Name, Location, Contact Info, What They Do, Why Fit, Outreach Copy, Priority, Status
+      // Brand Design: Category, Business Name, Location, Contact Info, What They Do, Why Fit, Outreach Copy, Priority, Status
       imported.push({
         id: `imported-${Date.now()}-${i}`,
         status: 'new',
