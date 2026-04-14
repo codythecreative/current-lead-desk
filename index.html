@@ -662,11 +662,13 @@ const SAMPLES = {
       phone: "",
       location: "Bronx / Lincoln Center campus",
       why: "Active programming board with fall semester budget. LoveKey pop-up works well for orientation events, spring fling, and mental health awareness weeks.",
-      outreach: `Hi — my name is Cody, and I'm an artist and creator of the LoveKey Movement™ — a project built around one message: Love is the Key.
+      outreach: `Hi [First Name],
+
+My name is Cody, and I'm an artist and creator of the LoveKey Movement™, a project built around one message: Love is the Key.
 
 LoveKey has been doing pop-up art installations at colleges and art fairs around the country.
 
-The experience is simple. Students respond to a prompt, share a moment, and leave with a physical key. The prompt can be customized to fit your campus — a favorite memory, a theme that matters to your community — or we can go with the standard: "Share a time when love made all the difference." That one has been moving people to tears at installations everywhere it goes.
+The experience is simple. Students respond to a prompt, share a moment, and leave with a physical key. The prompt can be customized to fit your campus (i.e. a favorite memory, a theme that matters to your community) or we can go with the standard: "Share a time when love made all the difference," that one has been moving people to tears at installations everywhere it goes.
 
 LoveKey fits naturally into welcome week, mental health awareness programming, student life activations, and so much more.
 
@@ -721,7 +723,7 @@ function init() {
   const hasSaved = loadState();
   if (!hasSaved) {
     Object.keys(SAMPLES).forEach(proj => {
-      state.leads[proj] = SAMPLES[proj].map((l, i) => ({ ...l, id: `${proj}-${i}`, status: 'new', sample: true }));
+      state.leads[proj] = SAMPLES[proj].map((l, i) => ({ ...l, id: `${proj}-${i}`, status: 'new' }));
     });
     saveState();
   }
@@ -807,8 +809,7 @@ function render() {
       <div class="lead-meta">
         <span class="lead-tag ${tagClass}">${projNames[proj]}</span>
         ${lead.priority ? `<span class="lead-tag" style="background:rgba(192,98,42,0.1);color:var(--rust);">${lead.priority}</span>` : ''}
-        ${lead.sample ? `<span class="lead-tag" style="background:rgba(192,98,42,0.15);color:var(--rust);">Sample</span>` : ''}
-<span class="lead-number">${currentIndex + 1} of ${total}</span>
+        <span class="lead-number">${currentIndex + 1} of ${total}</span>
       </div>
       <div class="lead-name">${lead.name}</div>
       ${lead.type ? `<div class="lead-type">${lead.type}</div>` : ''}
@@ -894,11 +895,14 @@ function switchProject(proj) {
 // ── OUTREACH TEMPLATES ─────────────────────────────────────────────────────
 const OUTREACH_TEMPLATES = {
   'lovekey-events': (lead) => {
-    return `Hi${lead.contactName ? ' ' + lead.contactName.split(' ')[0] : ''} — my name is Cody, and I'm an artist and creator of the LoveKey Movement™ — a project built around one message: Love is the Key.
+    const firstName = lead.contactName ? lead.contactName.split(' ')[0] : '[First Name]';
+    return `Hi ${firstName},
+
+My name is Cody, and I'm an artist and creator of the LoveKey Movement™, a project built around one message: Love is the Key.
 
 LoveKey has been doing pop-up art installations at colleges and art fairs around the country.
 
-The experience is simple. Students respond to a prompt, share a moment, and leave with a physical key. The prompt can be customized to fit your campus — a favorite memory, a theme that matters to your community — or we can go with the standard: "Share a time when love made all the difference." That one has been moving people to tears at installations everywhere it goes.
+The experience is simple. Students respond to a prompt, share a moment, and leave with a physical key. The prompt can be customized to fit your campus (i.e. a favorite memory, a theme that matters to your community) or we can go with the standard: "Share a time when love made all the difference," that one has been moving people to tears at installations everywhere it goes.
 
 LoveKey fits naturally into welcome week, mental health awareness programming, student life activations, and so much more.
 
